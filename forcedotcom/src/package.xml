@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+    <types>
+        <members>*</members>
+        <name>CustomApplication</name>
+    </types>
+    <types>
+        <members>*</members>
+        <name>CustomObject</name>
+    </types>
+    <types>
+        <members>*</members>
+        <name>CustomTab</name>
+    </types>
+    <types>
+        <members>Command__c-Command Layout</members>
+        <members>Program__c-Program Layout</members>
+        <members>Robot__c-Robot Layout</members>
+        <members>SensorData__c-Sensor Data Layout</members>
+        <name>Layout</name>
+    </types>
+    <version>24.0</version>
+</Package>

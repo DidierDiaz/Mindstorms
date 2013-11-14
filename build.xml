@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project name="ev3" default="clean" basedir=".">
+	
+	<!-- DEVELOPMENT SECTION -->
+	<property name="environment" value="EV3" />
+	<property name="project" value="ev3"/>
+	<property name="version" value="0.1"/>	
+	<property name="base.dir" value="." />
+	<property name="src" location="src"/>
+	<property name="lib" location="${base.dir}/lib" />
+	<property name="build" location="build"/>
+	<property name="dist"  location="target"/>
+	<property name="dist.lib"  location="${dist}/lib"/>
+	<property name="logs" location="${base.dir}/logs" />
+
+	<!-- EV3 SSH SECTION -->
+	<property file="${basedir}/build.properties"/>
+	
+	<!-- EV3 LINUX SECTION -->
+	<property name="remotePath" value="/home/root/lejos/samples/"/>
+
+	<!-- CLASS SECTION -->
+	<property name="package" value="ev3"/>
+	<property name="class" value="EV3ForceCommand"/>
+		
+	<!-- TARGET SECTION -->
+	<target name="init">
+		<tstamp/>
+		<echo message="Initializating ANT."/>
+		<condition property="debugging">
+			<equals arg1="${environment}" arg2="LOCAL" />
+		</condition>		
+	</target>
+	
+	<target name="development" depends="init">
+		<tstamp/>
+		<echo message="Development phase."/>
+		<antcall target="infraestructure" />
+		<antcall target="packaging" />
+	</target>
+	
+	<target name="infraestructure">
+		<tstamp/>
+		<echo message="Initializating environment."/>
+		<antcall target="local-init" />		
+		<antcall target="remote-init" />
+	</target>
+	
+	<target name="local-init" description="Initializating local environment" >
+		<tstamp/>
+		<echo message="Initializating local environment."/>
+		<mkdir dir="${build}"/>
+		<mkdir dir="${logs}"/>
+		<mkdir dir="${dist}"/>
+		<mkdir dir="${dist.lib}"/>
+	</target>
+
+	<target name="remote-init" unless="debugging" description="Initializating local environment" >
+		<tstamp/>
+		<echo message="Initializating remote environment."/>
+		<sshexec host="${host}"
+			username="${username}"
+			password="${password}"
+			command="cd ${remotePath}; rm -f -r ${project}; mkdir ${project}; cd ${project}; mkdir lib;"
+			trust="true"
+		/>
+	</target>
+	
+	<target name="compilation" description="Compile your project" >
+		<tstamp/>
+		<echo message="Compiling project."/>
+		<javac srcdir="${src}" destdir="${build}">
+			<classpath>
+				<fileset dir="${lib}">
+				        <include name="**/*.jar" />
+				</fileset>
+			</classpath>
+		</javac>
+	</target>
+	
+	<target name="packaging" depends="compilation" description="generate the distribution" >
+		<tstamp/>
+		<echo message="Packaging project."/>
+		<jar jarfile="${dist}/${project}-${DSTAMP}.jar" basedir="${build}">
+            <manifest>
+		    <attribute name="Built-By" value="${user.name}"/>
+				<attribute name="Specification-Title" value="${project}"/>
+				<attribute name="Specification-Version" value="${version}"/>
+				<attribute name="Specification-Vendor" value="JAB"/>
+            	<attribute name="Implementation-Title" value="${project}"/>
+            	<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
+				<attribute name="Implementation-Vendor" value="JAB"/>                
+		    	<attribute name="Main-Class" value="${package}.${class}"/>
+				<attribute name="Class-Path" value="
+					lib/bayeux-api-2.3.1.jar
+					lib/cometd-java-client-2.3.1.jar
+					lib/cometd-java-common-2.3.1.jar
+					lib/jetty-client-7.4.4.v20110707.jar
+					lib/jetty-http-7.4.4.v20110707.jar
+					lib/jetty-io-7.4.4.v20110707.jar
+					lib/jetty-util-7.4.4.v20110707.jar
+					lib/force-partner-api-29.0.0.jar
+					lib/force-wsc-29.0.0.jar
+					/home/root/lejos/lib/ev3classes.jar 
+					/home/root/lejos/libjna/usr/share/java/jna.jar 
+					"			
+				/>
+            </manifest>
+		</jar>
+		<echo message="Packaging project dependencies."/>		
+		<copy todir="${dist.lib}">
+			<fileset dir="${lib}">
+				<exclude name="ev3classes.jar"/>
+		    </fileset>
+		  </copy>
+	</target>
+	
+	<target name="deployment" depends="development">
+		<tstamp/>
+		<echo message="Deployment phase."/>
+		<antcall target="run" />
+	</target>
+	
+	<target name="deploy" unless="debugging">
+		<tstamp/>
+		<echo message="Deploying software."/>
+		<antcall target="local-deployment" />
+		<antcall target="remote-deployment" />
+	</target>
+
+	<target name="local-deployment">
+		<tstamp/>
+		<echo message="Deploying in local."/>
+	</target>
+
+	<target name="remote-deployment">
+		<tstamp/>
+		<echo message="Deploying software into EV3 Brick."/>
+    	<scp file="${dist}/${project}-${DSTAMP}.jar"
+    	     todir="${username}:@${host}:${remotePath}${project}/"
+    		 trust="true"
+		/>
+		<echo message="Deploying software dependencies into EV3 Brick."/>
+		<scp todir="${username}:@${host}:${remotePath}${project}/lib/" trust="true">
+			<fileset dir="${dist.lib}"/>
+		</scp>
+	</target>
+	
+	<target name="run" unless="debugging" depends="deploy">
+		<tstamp/>
+		<echo message="Running software."/>
+		<antcall target="local-run" />
+		<antcall target="remote-run" />
+	</target>
+
+	<target name="local-run">
+		<tstamp/>
+		<echo message="Running software in local."/>
+	</target>
+				
+	<target name="remote-run">
+		<tstamp/>
+		<echo message="Running software in remote."/>
+		<sshexec host="${host}"
+			username="${username}"
+			password="${password}"
+			command="cd ${remotePath}${project}/; jrun -jar ${project}-${DSTAMP}.jar ${sf.user} ${sf.password}"
+			trust="true"
+		/>
+	</target>
+	
+	<target name="clean" depends="deployment" description="Clean up" >
+		<delete dir="${build}"/>
+		<delete dir="${dist}"/>
+	</target>
+	
+	<!-- UTILITIES -->
+	<target name="halt">
+		<tstamp/>
+		<echo message="Shutdown EV3 brick."/>
+		<sshexec host="${host}"
+			username="${username}"
+			password="${password}"
+			command="halt "
+			trust="true"
+		/>
+	</target>
+	
+	<target name="updatewifi">
+		<echo file="${basedir}/wpa_supplicant.conf">#eapol_version=1
+#ap_scan=1
+ctrl_interface=/var/run/wpa_supplicant
+
+#fast_reauth=1
+
+# Pers
+network={
+        ssid="${wifi.sid}"
+        key_mgmt=WPA-PSK
+        psk="${wifi.password}"
+        pairwise=CCMP TKIP
+        group=CCMP TKIP
+        proto=RSN
+}
+</echo>
+    	<scp file="${basedir}/wpa_supplicant.conf"    		
+    	     todir="${username}:@${host}:/etc"
+    		 trust="true"/>
+	</target>
+
+</project>
