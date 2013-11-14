@@ -1,5 +1,5 @@
-Lego EV3 Force Command
-======================
+Lego Mindstorms EV3 Force Command
+=================================
 
 Demo of a Force.com framework to command a Lego Mindstorms EV3 Robot!
 
