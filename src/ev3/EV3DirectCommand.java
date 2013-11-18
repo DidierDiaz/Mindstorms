@@ -53,8 +53,8 @@ public class EV3DirectCommand {
 	
 	public static void turnLeft()
 	{
-    	Motor.B.rotate((int) (180 * 2.4)*-1, true);
-    	Motor.C.rotate((int) (180 * 2.4)*1, true);
+    	Motor.B.rotate((int) (180 * 2.5)*-1, true);
+    	Motor.C.rotate((int) (180 * 2.5)*1, true);
     	while (Motor.B.isMoving() || Motor.C.isMoving());
     	Motor.B.flt(true);
     	Motor.C.flt(true);
@@ -62,8 +62,8 @@ public class EV3DirectCommand {
 	
 	public static void turnRight()
 	{
-    	Motor.B.rotate((int) (180 * 2.4)*1, true);
-    	Motor.C.rotate((int) (180 * 2.4)*-1, true);
+    	Motor.B.rotate((int) (180 * 2.5)*1, true);
+    	Motor.C.rotate((int) (180 * 2.5)*-1, true);
     	while (Motor.B.isMoving() || Motor.C.isMoving());
     	Motor.B.flt(true);
     	Motor.C.flt(true);
