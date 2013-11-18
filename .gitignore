@@ -1,2 +1,25 @@
 
 *.class
+
+target/ev3-20131114.jar
+
+target/ev3-20131115.jar
+
+target/lib/bayeux-api-2.3.1.jar
+
+target/lib/cometd-java-client-2.3.1.jar
+
+target/lib/cometd-java-common-2.3.1.jar
+
+target/lib/force-partner-api-29.0.0.jar
+
+target/lib/force-wsc-29.0.0.jar
+
+target/lib/jetty-client-7.4.4.v20110707.jar
+
+target/lib/jetty-http-7.4.4.v20110707.jar
+
+target/lib/jetty-io-7.4.4.v20110707.jar
+
+target/lib/jetty-util-7.4.4.v20110707.jar
+/build.properties

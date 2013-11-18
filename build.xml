@@ -22,6 +22,7 @@
 	<!-- CLASS SECTION -->
 	<property name="package" value="ev3"/>
 	<property name="class" value="EV3ForceCommand"/>
+	<!--<property name="class" value="EV3DirectCommand"/>-->
 		
 	<!-- TARGET SECTION -->
 	<target name="init">
@@ -208,4 +209,22 @@ network={
     		 trust="true"/>
 	</target>
 
+	<target name="updatewifi.df">
+		<echo file="${basedir}/wpa_supplicant.conf">#eapol_version=1
+#ap_scan=1
+ctrl_interface=/var/run/wpa_supplicant
+
+#fast_reauth=1
+
+# Pers
+network={
+        ssid=Dreamforce
+        key_mgmt=NONE
+}
+</echo>
+    	<scp file="${basedir}/wpa_supplicant.conf"    		
+    	     todir="${username}:@${host}:/etc"
+    		 trust="true"/>
+	</target>
+	
 </project>

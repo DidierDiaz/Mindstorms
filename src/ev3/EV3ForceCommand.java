@@ -23,7 +23,6 @@ import com.sforce.ws.ConnectorConfig;
 
 import lejos.nxt.Button;
 import lejos.nxt.LCD;
-import lejos.nxt.Motor;
 
 /** 
  * Demonstration Java program to run on the Lego Mindstorms EV3 receiving commands
@@ -37,7 +36,7 @@ public class EV3ForceCommand {
     	// Login
         LCD.clear();
         System.out.println("Logging in....");
-        LCD.drawString("Logging in....", 0, 5);
+        LCD.drawString("Logging in....", 0, 1);
         ConnectorConfig partnerConfig = new ConnectorConfig();
         partnerConfig.setManualLogin(true); // Manual configuration to get LoginResult
         partnerConfig.setServiceEndpoint("https://login.salesforce.com/services/Soap/u/29.0");
@@ -48,14 +47,13 @@ public class EV3ForceCommand {
         partnerConnection.setSessionHeader(loginResult.getSessionId());        
         
         // Subscribe to the Command push topic
-        LCD.clear();
         System.out.println("Stream connect....");
-        LCD.drawString("Stream connect....", 0, 5);        
+        LCD.drawString("Stream connect....", 0, 2);        
         final BayeuxClient client = makeStreamingAPIConnection(loginResult);
+        LCD.drawString("Waiting....", 0, 3);
 
         // Configure robot
-    	Motor.B.setSpeed(900);
-    	Motor.C.setSpeed(900);
+        EV3DirectCommand.init();
         
         // Subscribe to the Process__c topic to listen for new or updated Processes
         client.getChannel("/topic/commands").subscribe(new ClientSessionChannel.MessageListener() 
@@ -77,7 +75,7 @@ public class EV3ForceCommand {
                     }
                     catch (Exception e)
                     {
-                    	System.err.println(e.getMessage());
+                    	e.printStackTrace();
                     	System.exit(1);
                     }
                 }
@@ -104,43 +102,22 @@ public class EV3ForceCommand {
         LCD.drawString("Command:  ", 0, 3);
         LCD.drawString(command, 0, 4);
         LCD.drawString("Parameter:", 0, 5);        
-        LCD.drawString(commandParameter, 0, 6);        
+        LCD.drawString(commandParameter==null ? "" : commandParameter, 0, 6);
+        int parameter = 1;
+        if(commandParameter!=null && commandParameter.length()>0)
+        	try { parameter = Integer.parseInt(commandParameter); } catch (Exception e) { }
         if(command.equals("Forward"))
-        {
-        	// Run both motors forward for a given time and then cut power to them        	
-        	Motor.B.forward();
-        	Motor.C.forward();
-        	if(commandParameter!=null && commandParameter.length()>0)
-        		Thread.sleep(Long.parseLong(commandParameter) * 1000);
-        	Motor.B.flt(true);
-        	Motor.C.flt();
-        }
+        	EV3DirectCommand.moveForward(parameter);
         else if(command.equals("Backward"))
-        {
-        	// Run both motors backward for a given time and then cut power to them
-        	Motor.B.backward();
-        	Motor.C.backward();
-        	if(commandParameter!=null && commandParameter.length()>0)
-        		Thread.sleep(Long.parseLong(commandParameter) * 1000);
-        	Motor.B.flt(true);
-        	Motor.C.flt();
-        }                            	
-        else if(command.equals("Rotate"))
-        {
-        	// Run both motors in opposite directions for a given time and then cut power to them        	
-        	Motor.B.forward();
-        	Motor.C.backward();
-        	if(commandParameter!=null && commandParameter.length()>0)
-        		Thread.sleep(Long.parseLong(commandParameter) * 1000);
-        	Motor.B.flt(true);
-        	Motor.C.flt();
-        }                            	                            	
-        else if(command.equals("Stop"))
-        {
-        	// Stop both motors (cut power and let them float)
-        	Motor.B.flt(true);
-        	Motor.C.flt();
-        }        
+        	EV3DirectCommand.moveBackwards(parameter);
+        else if(command.equals("Rotate Left"))
+        	EV3DirectCommand.turnLeft();
+        else if(command.equals("Rotate Right"))
+        	EV3DirectCommand.turnRight();
+        else if(command.equals("Grab"))
+        	EV3DirectCommand.grab();
+        else if(command.equals("Release"))
+        	EV3DirectCommand.release();
         else if(command.equals("Shutdown"))
         {
         	// Power the robot down
@@ -149,17 +126,17 @@ public class EV3ForceCommand {
         }                
         else if(command.equals("Run Program"))
         {
+        	// Program to run?
+        	if(programToRunId==null)
+        		return;
         	// Query for the given program commands and execute them as above
 			QueryResult result = 
 				partnerConnection.query(
 					"select Name, Command__c, CommandParameter__c, ProgramToRun__c " +
 					  "from Command__c " +
-					  "where Program__c = '" + programToRunId + "' order by Name");
+					  "where Program__c = '" + programToRunId + "' order by ProgramSequence__c");
 			SObject[] commands = result.getRecords();
-			int loopProgram = 1;
-			if(commandParameter!=null && commandParameter.length()>0)
-				loopProgram = Integer.parseInt(commandParameter);
-			for(int loop=0; loop<loopProgram; loop++)
+			for(int loop=0; loop<parameter; loop++)
 				for(SObject commandRecord : commands)
 					executeCommand(
 							(String) commandRecord.getField("Name"),
