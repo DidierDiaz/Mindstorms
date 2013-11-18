@@ -23,3 +23,9 @@ target/lib/jetty-io-7.4.4.v20110707.jar
 
 target/lib/jetty-util-7.4.4.v20110707.jar
 /build.properties
+
+target/ev3-20131117.jar
+
+wpa_supplicant.conf
+
+build.properties
