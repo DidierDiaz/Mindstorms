@@ -218,8 +218,11 @@ ctrl_interface=/var/run/wpa_supplicant
 
 # Pers
 network={
-        ssid=Dreamforce
+        scan_ssid=1
+        priority=1
+        ssid="Dreamforce"
         key_mgmt=NONE
+        auth_alg=OPEN
 }
 </echo>
     	<scp file="${basedir}/wpa_supplicant.conf"    		

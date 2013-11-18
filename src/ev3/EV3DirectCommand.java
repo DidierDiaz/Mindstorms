@@ -35,8 +35,7 @@ public class EV3DirectCommand {
 		if(sensor1.isPressed())
 			return;
 		// Release grabbers		
-		Motor.A.resetTachoCount();
-		Motor.A.rotate((180 * 4)*-1);
+		Motor.A.rotate((180 * 5)*-1);
     	Motor.A.flt(true);		
 	}
 
@@ -46,8 +45,7 @@ public class EV3DirectCommand {
 		EV3TouchSensor sensor1 = new EV3TouchSensor((ADSensorPort)SensorPort.S1);
 		if(sensor1.isPressed()==false)
 			return;
-		Motor.A.resetTachoCount();
-		Motor.A.rotate((180 * 4));		
+		Motor.A.rotate((180 * 5));		
     	Motor.A.flt(true);		
 	}
 	
